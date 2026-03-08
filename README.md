@@ -159,8 +159,6 @@ Settings → Secrets and Variables → Actions → New Repository Secret
 
 Create the following:
 
-  Secret            Description
-  ----------------- -------------------------
   DOCKER_USERNAME   DockerHub username
   DOCKER_PASSWORD   DockerHub access token
   IMAGE_NAME        Docker image repository
