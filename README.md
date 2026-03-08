@@ -1,233 +1,260 @@
 # K3s Infrastructure + CI/CD Deployment Project
 
-This project demonstrates a complete DevOps workflow including:
+This project demonstrates a complete **DevOps workflow** including:
 
-1.Infrastructure provisioning using Terraform
+-   Infrastructure provisioning using Terraform
+-   Kubernetes cluster setup using K3s
+-   Containerization using Docker
+-   CI/CD automation using GitHub Actions
+-   Cloud infrastructure on AWS
 
-2.Kubernetes cluster setup using K3s
+The pipeline automatically:
 
-3.Containerization using Docker
+1.  Creates a K3s server
+2.  Builds Docker images
+3.  Pushes images to Docker Hub
+4.  Deploys the application into Kubernetes
 
-4.CI/CD automation using GitHub Actions
-
-5.Cloud infrastructure on Amazon Web Services
-
-# The pipeline automatically:
-
-* Creates a K3s server
-
-* Builds Docker images
-
-* Pushes images to Docker registry
-
-* Deploys the application into Kubernetes
+------------------------------------------------------------------------
 
 # Project Structure
-.
-├── .github
-│   └── workflows
-│          └── CI-CD.yml
-│
-├── k3s_infra_create
-│   ├── backend.tf
-│   ├── main.tf
-│   ├── outputs.tf
-│   ├── provider.tf
-│   └── variables.tf
-│
-├── k3s-manifest
-│   ├── deploy.yml
-│   ├── ingress.yml
-│   └── svc.yml
-│
-├── Dockerfile
-└── index.html
+
+    .
+    ├── .github
+    │   └── workflows
+    │
+    ├── k3s_infra_create
+    │   ├── backend.tf
+    │   ├── main.tf
+    │   ├── outputs.tf
+    │   ├── provider.tf
+    │   └── variables.tf
+    │
+    ├── k3s-manifest
+    │   ├── deploy.yml
+    │   ├── ingress.yml
+    │   └── svc.yml
+    │
+    ├── Dockerfile
+    └── index.html
+
+------------------------------------------------------------------------
 
 # Prerequisites
 
-Before running this project, install the following tools on your local machine or server.
+Install the following tools on your local machine or server.
 
-=> Install Git :(Ubuntu)
-sudo apt update
-sudo apt install git -y
+## Install Git
 
-* Verify installation:
-git --version
+Ubuntu
 
-=> Install Terraform :(Ubuntu)
--- sudo apt update
--- sudo apt install -y gnupg software-properties-common curl
--- curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
--- sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+    sudo apt update
+    sudo apt install git -y
 
--- sudo apt update
--- sudo apt install terraform
+Verify
 
-* Verify installation:
--- terraform --version
+    git --version
 
-=> Install AWS CLI :(Ubuntu)
--- sudo apt install awscli -y
+------------------------------------------------------------------------
 
-* Verify installation:
--- aws --version
+## Install Terraform
 
-# Configure AWS Access
+    sudo apt update
+    sudo apt install -y gnupg software-properties-common curl
+    curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+    sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+    sudo apt update
+    sudo apt install terraform
 
-1.Login to the AWS console in Amazon Web Services.
+Verify
 
-2.Create an IAM user with permissions:
-*EC2 Full Access
-*Security Group creation
-*S3 access
-*DynamoDB access
+    terraform --version
 
-* After creating the user, obtain: (Access Key, Secret Key)
+------------------------------------------------------------------------
+
+## Install AWS CLI
+
+    sudo apt install awscli -y
+
+Verify
+
+    aws --version
+
+------------------------------------------------------------------------
+
+# Configure AWS CLI
+
+Create an IAM user in AWS with permissions:
+
+-   EC2 Full Access
+-   Security Group creation
+-   S3 access
+-   DynamoDB access
+
 Run:
--- aws configure
 
-Enter:
-AWS Access Key
-AWS Secret Key
-Region
-Output format
+    aws configure
 
-* Verify configuration:
--- aws configure list
+Verify:
 
-Ensure both Access Key and Secret Key are configured correctly.
+    aws configure list
+
+------------------------------------------------------------------------
 
 # Clone the Repository
 
-Clone the project:
+    git clone https://github.com/YOUR_USERNAME/k3s_project.git
+    cd k3s_project
 
--- git clone https://github.com/yourusername/k3s_project.git
--- cd k3s_project
+------------------------------------------------------------------------
 
-* Create K3s Infrastructure
+# Create K3s Infrastructure
 
-* Go to the Terraform folder:
--- cd k3s_infra_create
+    cd k3s_infra_create
+    terraform init
+    terraform plan
+    terraform apply --auto-approve
 
-* Verify Terraform installation:
--- terraform --version
--- Initialize Terraform
+After completion Terraform will output the **Public IP** of the K3s
+server.
 
-* Run:
--- terraform init
+------------------------------------------------------------------------
 
-* This will:
-1.Initialize Terraform dependencies
-2.Configure backend
-3.Create state storage in S3
-4.Enable state locking using DynamoDB
-5.Validate Infrastructure Plan
+# Connect to the K3s Server
 
-* Run:
--- terraform plan
+    ssh -i your-key.pem ubuntu@PUBLIC_IP
 
-* This checks whether the infrastructure configuration is valid.
-* Ensure the plan completes without errors.
+Verify Kubernetes:
 
-* Create K3s Server
+    sudo kubectl get nodes
 
-* Run:
--- terraform apply --auto-approve
+Verify Docker:
 
-* Terraform will create:
-1.EC2 instance
-2.Security groups
-3.K3s installation
-4.Docker installation
+    docker --version
 
-* After completion, Terraform will output:
-1.Public IP
-2.Connect to the K3s Server
+------------------------------------------------------------------------
 
-* Use SSH to connect.
--- ssh -i your-key.pem ubuntu@K3S_PUBLIC_IP
+# Setup GitHub Self Hosted Runner
 
-# Verify installations 
+    sudo mkdir K3s_Project
+    cd K3s_Project
 
-* Check K3s:
--- sudo kubectl get nodes
+Go to GitHub repository:
 
-* Check Docker:
--- docker --version
+Settings → Actions → Runners → New Self Hosted Runner
 
-* Setup GitHub New Self-Hosted Runner
+Select **Linux** and follow the commands shown.
 
-* Create a working directory:
--- sudo mkdir K3s_Project
--- cd K3s_Project
+Runner status should show:
 
-* Follow the commands provided by GitHub to install the runner on your K3s server.
-* After installation, start the runner.
-* Verify status in GitHub.
-* Runner status should show: (Idle)
-* This means the runner is ready to execute workflows.
+    Idle
 
-# CI/CD Workflow
+------------------------------------------------------------------------
 
-* Create GitHub Secrets
-* Repository Settings → Secrets and Variables → Actions → New Repository Secret
+# Configure GitHub Secrets
 
-* Create the following three secrets:
-DOCKER_USERNAME	-> Your Docker Hub username
-DOCKER_PASSWORD	-> Your Docker Hub access token
-IMAGE_NAME	-> DockerHub repository and image name (e.g username/k3s-html-app)
+Go to:
 
-* These secrets will be used inside the workflow file.
-* GitHub Workflow File (.github/workflows/CI-CD.yml)
+Settings → Secrets and Variables → Actions → New Repository Secret
 
-# Deployment 
+Create the following:
 
-* When a developer pushes code to the repository:
-* git push origin main
+  Secret            Description
+  ----------------- -------------------------
+  DOCKER_USERNAME   DockerHub username
+  DOCKER_PASSWORD   DockerHub access token
+  IMAGE_NAME        Docker image repository
 
-* The CI/CD pipeline will:
-1.Build the Docker image
-2.Tag the image using the commit ID
-3.Push the image to Docker Hub
-4.Update the Kubernetes deployment
-5.Deploy Kubernetes Manifests
+Example:
 
-* Once deployment is complete, open your browser.
+    IMAGE_NAME=username/k3s-html-app
 
-==> http://K3S_PUBLIC_IP:80
+------------------------------------------------------------------------
 
-* You should see the deployed application.
+# GitHub Workflow File
 
-** If the developer updates index.html and pushes new code, the pipeline will automatically **
+Create:
 
-### Deployment Workflow ###
+    .github/workflows/ci-cd.yml
 
-Developer Push Code
-        │
-        ▼
-GitHub Repository
-        │
-        ▼
-GitHub Actions Pipeline
-        │
-        ├ Build Docker Image
-        ├ Push Image to Docker Hub
-        └ Deploy to K3s Cluster
-                │
-                ▼
-Kubernetes Deployment Updated
-                │
-                ▼
-Application Available via Ingress
+Example:
 
-### Technologies Used ###
+``` yaml
+name: Build and Deploy Application
 
-Infrastructure Provisioning ---> Terraform
+on:
+  push:
+    branches:
+      - main
 
-Containerization ---> Docker
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
 
-Container Orchestration ---> K3s
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-CI/CD Automation ---> GitHub Actions
+      - name: Docker Hub Login
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login           -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-Cloud Platform ---> AWS
+      - name: Build Docker Image
+        run: |
+          docker build -t ${{ secrets.IMAGE_NAME }}:${{ github.sha }} .
+
+      - name: Push Docker Image
+        run: |
+          docker push ${{ secrets.IMAGE_NAME }}:${{ github.sha }}
+
+      - name: Update Kubernetes Deployment
+        run: |
+          kubectl set image deployment/html-app           html-app=${{ secrets.IMAGE_NAME }}:${{ github.sha }}
+```
+
+------------------------------------------------------------------------
+
+# Deploy Kubernetes Manifests
+
+    cd k3s-manifest
+    kubectl apply -f .
+
+This will create:
+
+-   Deployment
+-   Service
+-   Ingress
+
+------------------------------------------------------------------------
+
+# Access Application
+
+Open:
+
+    http://K3S_PUBLIC_IP:80
+
+------------------------------------------------------------------------
+
+# CI/CD Flow
+
+Developer pushes code:
+
+    git push origin main
+
+Pipeline automatically:
+
+1.  Builds Docker image
+2.  Tags image with commit ID
+3.  Pushes image to DockerHub
+4.  Updates Kubernetes deployment
+5.  Deploys latest version
+
+------------------------------------------------------------------------
+
+# Technologies Used
+
+Terraform\
+Docker\
+K3s Kubernetes\
+GitHub Actions\
+AWS Cloud
