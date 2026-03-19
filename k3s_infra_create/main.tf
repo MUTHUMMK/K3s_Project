@@ -91,7 +91,7 @@ resource "aws_instance" "k3s_server" {
               
               
               # Deploy your container
-              sudo kubectl run nginx-5785977ddb-r9lmz --image=muthummkdh/muthu26:7bb0fb5 --port=80
+              sudo kubectl run nginx-5785977ddb-r9lmz --image=muthummkdh/muthu26:2c91a9b --port=80
               
               # Expose service
               sudo kubectl expose pod nginx-5785977ddb-r9lmz --type=NodePort --port=80 --target-port=80
